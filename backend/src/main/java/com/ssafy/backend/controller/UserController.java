@@ -40,14 +40,11 @@ public class UserController {
         return new Message(HttpStatus.OK, "로그인 성공", new LoginResultDto(loginId,jwtToken));
     }
 
-    @GetMapping("/logout/{id}")
-    public Message logout(@RequestHeader("Authorization") String token, @PathVariable Long id){
-        String subject = securityService.getSubject(token);
-        if(subject.equals(String.valueOf(id))){
-            securityService.logout(id,token);
-            return new Message(HttpStatus.OK, "로그아웃 성공", null);
-        }
-        return new Message(HttpStatus.BAD_REQUEST, "사용자가 일치하지 않습니다.", null);
+    @GetMapping("/logout")
+    public ResponseEntity<Message> logout(@RequestHeader("Authorization") String token){
+        Long userId = Long.valueOf(securityService.getSubject(token));
+        securityService.logout(userId,token);
+        return ResponseEntity.ok(new Message(HttpStatus.OK, "로그아웃 성공", null));
     }
 
     @PostMapping
@@ -100,5 +97,13 @@ public class UserController {
             return ResponseEntity.ok(new Message(HttpStatus.BAD_REQUEST, "이미 사용중인 이메일입니다.",null));
         }
        return ResponseEntity.ok(new Message(HttpStatus.ACCEPTED, "사용가능한 이메일 입니다.",null));
+    }
+
+    @GetMapping("/nickname")
+    public ResponseEntity<Message> nickname_check(@RequestParam String nickname) {
+        if(userService.isUsedNickname(nickname)){
+            return ResponseEntity.ok(new Message(HttpStatus.BAD_REQUEST, "이미 사용중인 닉네임입니다.",null));
+        }
+        return ResponseEntity.ok(new Message(HttpStatus.ACCEPTED, "사용가능한 닉네임 입니다.",null));
     }
 }
