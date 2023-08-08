@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://i9a605.p.ssafy.io:8081/api/debate'
+const BASE_URL = 'https://goldenteam.site/api/debate'
 
 export const getRoomInfo = async (roomId) => {
     try {
