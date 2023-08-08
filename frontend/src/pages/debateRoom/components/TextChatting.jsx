@@ -1,7 +1,9 @@
 import React, {useState, useRef, useEffect} from "react";
+// import SockJS from 'sockjs-client';
+// import Stomp from 'stompjs';
 import style from '../debatePage.module.css';
 
-function TextChatting(){
+function TextChatting({roomId}){
 
     const [inputText, setInputText] = useState("");
     const [chatMessages, setChatMessages] = useState([]);
@@ -17,7 +19,7 @@ function TextChatting(){
             setChatMessages((prevMessage) => [
                 ...prevMessage, 
                 {text: inputText, sender: "user"},
-            ]);
+            ]); 
             setInputText("");
         }
     };
