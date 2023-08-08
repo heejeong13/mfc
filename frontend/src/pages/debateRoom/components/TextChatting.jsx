@@ -1,14 +1,58 @@
 import React, {useState, useRef, useEffect} from "react";
-// import SockJS from 'sockjs-client';
-// import Stomp from 'stompjs';
+import SockJS from 'sockjs-client';
+import Stomp from 'stompjs';
+import {userInfoState} from '../../../recoil/userInfo';
 import style from '../debatePage.module.css';
+import { useRecoilValue } from "recoil";
 
 function TextChatting({roomId}){
 
     const [inputText, setInputText] = useState("");
     const [chatMessages, setChatMessages] = useState([]);
+    const userInfo = useRecoilValue(userInfoState);
+
+    console.log('userInfo: ', userInfo);
 
     const chatAreaRef = useRef();
+    const stompRef = useRef(null);
+    
+    useEffect(() => {
+        const userNickname = userInfo.nickname;
+
+        const SockJs = new SockJS('https://goldenteam.site/mfc', null, {
+            transports: ['xhr-streaming'],
+            headers: {
+                // 필요한 헤더 추가
+                'Access-Control-Allow-Origin': '*',
+            }
+        });
+        const stomp = Stomp.over(SockJs);
+        stompRef.current = stomp;
+
+        stomp.connect({}, () => {
+            stomp.subscribe(`/from/chat/${roomId}`, (message) =>{
+                const content = JSON.parse(message.body);
+
+                setChatMessages((prevMessage) => [
+                    ...prevMessage,
+                    { nickName: content.nickName, message: content.message},
+                ]);
+            });
+            
+            stomp.send(
+                '/to/chat', 
+                {}, 
+                JSON.stringify({roomId, nickName: userNickname})
+            );
+        });
+
+        return () => {
+            if(stomp.current){
+                stomp.disconnect();
+            }
+        };
+    }, [ roomId, userInfo.nickname ])
+
 
     const handleInputChange = (event) => {
         setInputText(event.target.value);
@@ -16,10 +60,15 @@ function TextChatting({roomId}){
 
     const handleSendMessage = () => {
         if(inputText.trim() !== ""){
-            setChatMessages((prevMessage) => [
-                ...prevMessage, 
-                {text: inputText, sender: "user"},
-            ]); 
+            stompRef.current.send(
+                '/to/chat',
+                {},
+                JSON.stringify({
+                    roomId,
+                    nickName: userInfo.nickname,
+                    message: inputText,
+                })
+            )
             setInputText("");
         }
     };
@@ -42,7 +91,7 @@ function TextChatting({roomId}){
             <div className={style.ChatArea} >
                 <div className={style.chatMessages} ref={chatAreaRef}>
                     {chatMessages.map((message, index) => (
-                        <div key={index} className={`${style.messageContainer} ${message.sender === "user" ? style.userMessage : style.otherMessage}`}>
+                        <div key={index} className={`${style.messageContainer} ${message.nickname === "user" ? style.userMessage : style.otherMessage}`}>
                             <p className={style.sender}>
                                 {message.sender === "user" ? "나" : `${message.sender}`}
                             </p>
