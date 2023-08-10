@@ -20,12 +20,16 @@ function MainPage() {
   const [ongoingDebateRooms, setOngoingDebateRooms] = useState([]);
   const [waitingDebateRooms, setWaitingDebateRooms] = useState([]);
   const [minWaitingRoomId, setMinWaitingRoomId] = useState(null);
+  
   const [userProfileImg1,] = useState("")
   const [userProfileImg2,] = useState("")
 
   const userId = useRecoilValue(userIdState);
   const tokenis = useRecoilValue(userState);
   const navigate = useNavigate();
+
+
+  const [loading, setLoading] = useState(false);
 
   const openModal = () => {
     setShowModal(true);
@@ -34,6 +38,47 @@ function MainPage() {
   const closeModal = () => {
     setShowModal(false);
   };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const container = document.getElementById("waitingContainer");
+      if (
+        container &&
+        container.scrollHeight - container.scrollTop === container.clientHeight
+      ) {
+        loadMoreWaitingDebateRooms();
+      }
+    };
+  
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  const loadMoreWaitingDebateRooms = async () => {
+    // 로딩 상태를 표시
+    setLoading(true);
+  
+    try {
+      const newWaitingRooms = await fetchDataForWaitingRooms(minWaitingRoomId);
+  
+      if (newWaitingRooms.length > 0) {
+        const newMinWaitingRoomId = Math.min(
+          ...newWaitingRooms.map((room) => room.roomId)
+        );
+        setMinWaitingRoomId(newMinWaitingRoomId);
+        setWaitingDebateRooms((prevRooms) => [...prevRooms, ...newWaitingRooms]);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  
+    // 로딩 상태 해제
+    setLoading(false);
+  };
+
+
 
   const handleCreateRoom = async () => {
     // 토론시간 유효성 검사
@@ -133,6 +178,24 @@ function MainPage() {
     // eslint-disable-next-line
   }, [minWaitingRoomId]);
 
+
+  const fetchDataForWaitingRooms = async (minWaitingRoomId) => {
+    try {
+      const apiUrl = `https://goldenteam.site/api/debate/list/waiting`;
+      const response = await axios.get(apiUrl, {
+        params: {
+          minRoomId: minWaitingRoomId,
+          size: 12,
+        },
+      });
+      const newData = response.data.data;
+      return newData;
+    } catch (error) {
+      console.error("Error fetching data for waiting rooms:", error);
+      return [];
+    }
+  };
+  
   return (
     <div className="container">
       <div className="innercontents">
@@ -149,7 +212,8 @@ function MainPage() {
         <div className={style.titlebox}>
           <span className={style.title}>참여 가능한 토론방</span>
         </div>
-        <div className={style.debateRoomContainer}>
+        {/* 무한 스크롤 구현 시작 */}
+        <div className={style.debateRoomContainer} id="waitingContainer">
           {waitingDebateRooms.map((room) => (
             <DebateRoomCard
               key={room.roomId}
@@ -163,11 +227,14 @@ function MainPage() {
             />
           ))}
         </div>
+        {/* 무한 스크롤 구현 끝 */}
+
         <hr className={style.horizontalline} />
         <div className={style.titlebox}>
           <span className={style.title}>진행 중인 토론방</span>
         </div>
-        <div className={style.debateRoomContainer}>
+        {/* 무한 스크롤 구현 시작 */}
+        <div className={`${style.debateRoomContainer} waiting-debate-room-container`} id="waitingContainer">
           {ongoingDebateRooms.map((room) => (
             <DebateRoomCard
               key={room.roomId}
@@ -181,7 +248,8 @@ function MainPage() {
             />
           ))}
         </div>
-      </div>
+        {/* 무한 스크롤 구현 끝 */}
+        </div>
       <CreateRoomModal
         showModal={showModal}
         closeModal={closeModal}

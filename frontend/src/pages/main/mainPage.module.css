@@ -37,11 +37,19 @@
   margin-top: 3px;
 }
 
+.container {
+  overflow: auto;
+  max-height: 80vh; /* 필요에 따라 조정 */
+}
+
+/* debateRoomContainer에 특정 높이와 스크롤을 적용합니다. */
 .debateRoomContainer {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
   gap: 20px;
+  height: 400px; /* 필요에 따라 조정 */
+  overflow: auto;
 }
 
 .debateRoomCard {
