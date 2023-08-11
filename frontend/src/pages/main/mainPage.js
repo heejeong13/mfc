@@ -34,7 +34,6 @@ function MainPage() {
   const closeModal = () => {
     setShowModal(false);
   };
-
   const handleCreateRoom = async () => {
     // 토론시간 유효성 검사
     const debateTimeInt = parseInt(debateTime);
@@ -142,10 +141,7 @@ function MainPage() {
   useEffect(() => {
     if (waitingContainerRef.current) {
       waitingContainerRef.current.addEventListener("scroll", handleWaitingScroll);
-      return () => {    
-        // eslint-disable-next-line
-        waitingContainerRef.current.removeEventListener("scroll", handleWaitingScroll);
-      };
+      
     }
     // eslint-disable-next-line
   }, []);
@@ -173,7 +169,7 @@ function MainPage() {
   
       const response = await axios.get(apiUrl);
       const newData = response.data.data;
-  
+    
       if (newData.length > 0) {
         const newMinRoomId = Math.min(...newData.map((room) => room.roomId));
         setMinWaitingRoomId(newMinRoomId);
@@ -191,10 +187,7 @@ function MainPage() {
   useEffect(() => {
     if (ongoingContainerRef.current) {
       ongoingContainerRef.current.addEventListener("scroll", handleOngoingScroll);
-      return () => {
-        // eslint-disable-next-line
-        ongoingContainerRef.current.removeEventListener("scroll", handleOngoingScroll);
-      };
+      
     }
     // eslint-disable-next-line
   }, []);
