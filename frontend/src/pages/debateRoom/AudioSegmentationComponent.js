@@ -39,7 +39,7 @@ const AudioSegmentationComponent = (roomId, myStatus) => {
 
               if (toxicityScore >= 0.7 || severeToxicityScore >= 0.7) {
                 console.log(roomId);
-                const stompMessage = { userId: roomId.userId, roomId: parseInt(roomId.roomId), isATopic : {myStatus}, penaltyCodeId : 1 };
+                const stompMessage = { userId: roomId.userId, roomId: parseInt(roomId.roomId), isATopic : roomId.myStatus, penaltyCodeId : 1 };
                 console.log(stompRef)
                 stompRef.current.send(
                   `/to/chat/penalty`,

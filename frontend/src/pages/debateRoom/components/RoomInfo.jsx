@@ -96,6 +96,7 @@ function RoomInfo({
       }, 1000);
       // 1회 발언시간 타이머
       const speechTimer = setInterval(() => {
+        // eslint-disable-next-line
         const currentTime1 = new Date();
         // const startTime1 = new Date(ongoingRoomInfo?.startTalkTime);
         // const timeDifferenceInMillis1 = currentTime1 - startTime1;
